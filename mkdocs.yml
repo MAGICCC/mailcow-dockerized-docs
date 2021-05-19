@@ -28,6 +28,7 @@ nav:
   - 'Installation': 'i_u_m_install.md'
   - 'Update': 'i_u_m_update.md'
   - 'Migration': 'i_u_m_migration.md'
+  - 'Deinstallation': 'i_u_m_deinstall.md'
 - 'Post Installation Tasks':
   - 'Advanced SSL': 'firststeps-ssl.md'
   - 'Disable IPv6': 'firststeps-disable_ipv6.md'
@@ -53,6 +54,7 @@ nav:
   - 'Remove Persistent Data': 'debug-rm_volumes.md'
   - 'Common Problems': 'debug-common_problems.md'
   - 'Admin login to SOGo': 'debug-admin_login_sogo.md'
+  - 'Reset TLS certificates': 'debug-reset-tls.md'
 - 'Backup & Restore':
   - 'Helper script':
     - 'Backup': 'b_n_r_backup.md'
@@ -105,8 +107,6 @@ nav:
   - 'Why unbound?': 'u_e-why_unbound.md'
   - 'Autodiscover / Autoconfig': 'u_e-autodiscover_config.md'
   - 'Redirect HTTP to HTTPS': 'u_e-80_to_443.md'
-  - 'Adjust Service Configurations': 'u_e-change_config.md'
-  - 'Deinstall': 'u_e-deinstall.md'
   - 'Re-enable TLS 1.0 and TLS 1.1': 'u_e-reeanble-weak-protocols.md'
 - 'Client Configuration':
   - 'Overview': 'client.md'
@@ -121,6 +121,7 @@ nav:
   - 'Windows Phone': 'client/client-windowsphone.md'
   - 'Manual configuration': 'client/client-manual.md'
 - 'Third party apps':
+  - 'Borgmatic Backup': 'third_party-borgmatic.md'
   - 'Exchange Hybrid Setup': 'third_party-exchange_onprem.md'
   - 'Gitea': 'third_party-gitea.md'
   - 'Gogs': 'third_party-gogs.md'
