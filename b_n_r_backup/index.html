@@ -12,7 +12,7 @@
         <link rel="canonical" href="https://mailcow.github.io/mailcow-dockerized-docs/b_n_r_backup/">
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.1.2">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.8">
     
     
       
@@ -20,10 +20,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.6f955dcd.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ca7ac06f.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ef6f36e2.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.f1a3b89f.min.css">
         
       
     
@@ -42,6 +42,8 @@
     
     
       
+
+
     
     
   </head>
@@ -315,6 +317,18 @@
     <li class="md-nav__item">
       <a href="../i_u_m_migration/" class="md-nav__link">
         Migration
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../i_u_m_deinstall/" class="md-nav__link">
+        Deinstallation
       </a>
     </li>
   
@@ -674,6 +688,18 @@
   
 
           
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debug-reset-tls/" class="md-nav__link">
+        Reset TLS certificates
+      </a>
+    </li>
+  
+
+          
         </ul>
       </nav>
     </li>
@@ -766,6 +792,26 @@
   <a href="#backup" class="md-nav__link">
     Backup
   </a>
+  
+    <nav class="md-nav" aria-label="Backup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manual" class="md-nav__link">
+    Manual
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cronjob" class="md-nav__link">
+    Cronjob
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -904,6 +950,18 @@
     <li class="md-nav__item">
       <a href="../u_e-mailcow_ui-config/" class="md-nav__link">
         Configuration
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../u_e-mailcow_ui-css/" class="md-nav__link">
+        CSS overrides
       </a>
     </li>
   
@@ -1514,30 +1572,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../u_e-change_config/" class="md-nav__link">
-        Adjust Service Configurations
-      </a>
-    </li>
-  
-
-          
-            
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../u_e-deinstall/" class="md-nav__link">
-        Deinstall
-      </a>
-    </li>
-  
-
-          
-            
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../u_e-reeanble-weak-protocols/" class="md-nav__link">
         Re-enable TLS 1.0 and TLS 1.1
       </a>
@@ -1742,6 +1776,18 @@
   
   
     <li class="md-nav__item">
+      <a href="../third_party-borgmatic/" class="md-nav__link">
+        Borgmatic Backup
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../third_party-exchange_onprem/" class="md-nav__link">
         Exchange Hybrid Setup
       </a>
@@ -1867,6 +1913,26 @@
     Backup
   </a>
   
+    <nav class="md-nav" aria-label="Backup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manual" class="md-nav__link">
+    Manual
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cronjob" class="md-nav__link">
+    Cronjob
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1889,6 +1955,7 @@
                   <h1>Backup</h1>
                 
                 <h3 id="backup">Backup<a class="headerlink" href="#backup" title="Permanent link">&para;</a></h3>
+<h4 id="manual">Manual<a class="headerlink" href="#manual" title="Permanent link">&para;</a></h4>
 <p>You can use the provided script <code>helper-scripts/backup_and_restore.sh</code> to backup mailcow automatically.</p>
 <p>Please do not copy this script to another location.</p>
 <p>To run a backup, write "backup" as first parameter and either one or more components to backup as following parameters.
@@ -1910,6 +1977,38 @@ You should not rename those folders to not break the restore process.</p>
 <p>To run a backup unattended, define MAILCOW_BACKUP_LOCATION as environment variable before starting the script:</p>
 <div class="highlight"><pre><span></span><code>MAILCOW_BACKUP_LOCATION=/opt/backup /opt/mailcow-dockerized/helper-scripts/backup_and_restore.sh backup all
 </code></pre></div>
+<h4 id="cronjob">Cronjob<a class="headerlink" href="#cronjob" title="Permanent link">&para;</a></h4>
+<p>You can run the backup script regularly via cronjob. Make sure <code>BACKUP_LOCATION</code> exists:</p>
+<div class="highlight"><pre><span></span><code>5 4 * * * cd /opt/mailcow-dockerized/; MAILCOW_BACKUP_LOCATION=/mnt/mailcow_backups /opt/mailcow-dockerized/helper-scripts/backup_and_restore.sh backup mysql crypt redis --delete-days 3
+</code></pre></div>
+<p>Per default cron sends the full result of each backup operation by email. If you want cron to only mail on error (non-zero exit code) you may want to use the following snippet. Pathes need to be modified according to your setup (this script is a user contribution).</p>
+<p>This following script may be placed in <code>/etc/cron.daily/mailcow-backup</code> - do not forget to mark it as executable via <code>chmod +x</code>:</p>
+<div class="highlight"><pre><span></span><code>#!/bin/sh
+
+# Backup mailcow data
+# https://mailcow.github.io/mailcow-dockerized-docs/b_n_r_backup/
+
+set -e
+
+OUT=&quot;$(mktemp)&quot;
+export MAILCOW_BACKUP_LOCATION=&quot;/opt/backup&quot;
+SCRIPT=&quot;/opt/mailcow-dockerized/helper-scripts/backup_and_restore.sh&quot;
+PARAMETERS=&quot;backup all&quot;
+OPTIONS=&quot;--delete-days 30&quot;
+
+# run command
+set +e
+&quot;${SCRIPT}&quot; ${PARAMETERS} ${OPTIONS} 2&gt;&amp;1 &gt; &quot;$OUT&quot;
+RESULT=$?
+
+if [ $RESULT -ne 0 ]
+    then
+            echo &quot;${SCRIPT} ${PARAMETERS} ${OPTIONS} encounters an error:&quot;
+            echo &quot;RESULT=$RESULT&quot;
+            echo &quot;STDOUT / STDERR:&quot;
+            cat &quot;$OUT&quot;
+fi
+</code></pre></div>
                 
               
               
@@ -1928,7 +2027,8 @@ You should not rename those folders to not break the restore process.</p>
   
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
-        <a href="../debug-admin_login_sogo/" class="md-footer__link md-footer__link--prev" rel="prev">
+        
+        <a href="../debug-reset-tls/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Reset TLS certificates" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1937,13 +2037,14 @@ You should not rename those folders to not break the restore process.</p>
               <span class="md-footer__direction">
                 Previous
               </span>
-              Admin login to SOGo
+              Reset TLS certificates
             </div>
           </div>
         </a>
       
       
-        <a href="../b_n_r_restore/" class="md-footer__link md-footer__link--next" rel="next">
+        
+        <a href="../b_n_r_restore/" class="md-footer__link md-footer__link--next" aria-label="Next: Restore" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
@@ -2004,10 +2105,10 @@ You should not rename those folders to not break the restore process.</p>
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../assets/javascripts/workers/search.fe42c31b.min.js", "version": null}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.b0710199.min.js", "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.4ea5477f.min.js"></script>
+      <script src="../assets/javascripts/bundle.76f349be.min.js"></script>
       
         <script src="../clients.js"></script>
       

@@ -12,7 +12,7 @@
         <link rel="canonical" href="https://mailcow.github.io/mailcow-dockerized-docs/u_e-nginx/">
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.1.2">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.8">
     
     
       
@@ -20,10 +20,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.6f955dcd.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ca7ac06f.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ef6f36e2.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.f1a3b89f.min.css">
         
       
     
@@ -42,6 +42,8 @@
     
     
       
+
+
     
     
   </head>
@@ -310,6 +312,18 @@
     <li class="md-nav__item">
       <a href="../i_u_m_migration/" class="md-nav__link">
         Migration
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../i_u_m_deinstall/" class="md-nav__link">
+        Deinstallation
       </a>
     </li>
   
@@ -669,6 +683,18 @@
   
 
           
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debug-reset-tls/" class="md-nav__link">
+        Reset TLS certificates
+      </a>
+    </li>
+  
+
+          
         </ul>
       </nav>
     </li>
@@ -861,6 +887,18 @@
     <li class="md-nav__item">
       <a href="../u_e-mailcow_ui-config/" class="md-nav__link">
         Configuration
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../u_e-mailcow_ui-css/" class="md-nav__link">
+        CSS overrides
       </a>
     </li>
   
@@ -1276,30 +1314,9 @@
       
       
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Custom sites
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
       <a href="./" class="md-nav__link md-nav__link--active">
         Custom sites
       </a>
-      
-        
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-    </ul>
-  
-</nav>
       
     </li>
   
@@ -1492,30 +1509,6 @@
     <li class="md-nav__item">
       <a href="../u_e-80_to_443/" class="md-nav__link">
         Redirect HTTP to HTTPS
-      </a>
-    </li>
-  
-
-          
-            
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../u_e-change_config/" class="md-nav__link">
-        Adjust Service Configurations
-      </a>
-    </li>
-  
-
-          
-            
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../u_e-deinstall/" class="md-nav__link">
-        Deinstall
       </a>
     </li>
   
@@ -1730,6 +1723,18 @@
   
   
     <li class="md-nav__item">
+      <a href="../third_party-borgmatic/" class="md-nav__link">
+        Borgmatic Backup
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../third_party-exchange_onprem/" class="md-nav__link">
         Exchange Hybrid Setup
       </a>
@@ -1853,13 +1858,21 @@
 <div class="highlight"><pre><span></span><code>server {
   ssl_certificate /etc/ssl/mail/cert.pem;
   ssl_certificate_key /etc/ssl/mail/key.pem;
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_prefer_server_ciphers on;
+  ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305;
+  ssl_ecdh_curve X25519:X448:secp384r1:secp256k1;
+  ssl_session_cache shared:SSL:50m;
+  ssl_session_timeout 1d;
+  ssl_session_tickets off;
   index index.php index.html;
   client_max_body_size 0;
   root /web;
   include /etc/nginx/conf.d/listen_plain.active;
   include /etc/nginx/conf.d/listen_ssl.active;
 <span class="hll">  server_name mysite.example.org;
-</span>
+</span>  server_tokens off;
+
   location ^~ /.well-known/acme-challenge/ {
     allow all;
     default_type &quot;text/plain&quot;;
@@ -1874,13 +1887,21 @@
 <div class="highlight"><pre><span></span><code>server {
   ssl_certificate /etc/ssl/mail/cert.pem;
   ssl_certificate_key /etc/ssl/mail/key.pem;
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_prefer_server_ciphers on;
+  ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305;
+  ssl_ecdh_curve X25519:X448:secp384r1:secp256k1;
+  ssl_session_cache shared:SSL:50m;
+  ssl_session_timeout 1d;
+  ssl_session_tickets off;
   index index.php index.html;
   client_max_body_size 0;
   root /web;
   include /etc/nginx/conf.d/listen_plain.active;
   include /etc/nginx/conf.d/listen_ssl.active;
 <span class="hll">  server_name example.domain.tld;
-</span>
+</span>  server_tokens off;
+
   location ^~ /.well-known/acme-challenge/ {
     allow all;
     default_type &quot;text/plain&quot;;
@@ -1890,9 +1911,9 @@
     return 301 https://$host$request_uri;
   }
 
-  location / {
-<span class="hll">    proxy_pass http://service:3000/;
-</span>    proxy_set_header Host $http_host;
+<span class="hll">  location / {
+</span>    proxy_pass http://service:3000/;
+    proxy_set_header Host $http_host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
@@ -1928,7 +1949,8 @@ docker-compose restart php-fpm-mailcow
   
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
-        <a href="../u_e-dovecot-static_master/" class="md-footer__link md-footer__link--prev" rel="prev">
+        
+        <a href="../u_e-dovecot-static_master/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Static master user" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1943,7 +1965,8 @@ docker-compose restart php-fpm-mailcow
         </a>
       
       
-        <a href="../u_e-webmail-site/" class="md-footer__link md-footer__link--next" rel="next">
+        
+        <a href="../u_e-webmail-site/" class="md-footer__link md-footer__link--next" aria-label="Next: Create subdomain webmail.example.org" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
@@ -2004,10 +2027,10 @@ docker-compose restart php-fpm-mailcow
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../assets/javascripts/workers/search.fe42c31b.min.js", "version": null}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.b0710199.min.js", "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.4ea5477f.min.js"></script>
+      <script src="../assets/javascripts/bundle.76f349be.min.js"></script>
       
         <script src="../clients.js"></script>
       

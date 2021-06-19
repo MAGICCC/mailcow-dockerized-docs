@@ -12,7 +12,7 @@
         <link rel="canonical" href="https://mailcow.github.io/mailcow-dockerized-docs/prerequisite-dns/">
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.1.2">
+      <meta name="generator" content="mkdocs-1.2.1, mkdocs-material-7.1.8">
     
     
       
@@ -20,10 +20,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.6f955dcd.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ca7ac06f.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ef6f36e2.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.f1a3b89f.min.css">
         
       
     
@@ -42,6 +42,8 @@
     
     
       
+
+
     
     
   </head>
@@ -336,7 +338,7 @@
         
           <li class="md-nav__item">
   <a href="#email-test-for-spf-dkim-and-dmarc" class="md-nav__link">
-    Email Test for SPF, DKIM and DMARC:
+    Email test for SPF, DKIM and DMARC:
   </a>
   
 </li>
@@ -422,6 +424,18 @@
     <li class="md-nav__item">
       <a href="../i_u_m_migration/" class="md-nav__link">
         Migration
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../i_u_m_deinstall/" class="md-nav__link">
+        Deinstallation
       </a>
     </li>
   
@@ -781,6 +795,18 @@
   
 
           
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debug-reset-tls/" class="md-nav__link">
+        Reset TLS certificates
+      </a>
+    </li>
+  
+
+          
         </ul>
       </nav>
     </li>
@@ -971,6 +997,18 @@
     <li class="md-nav__item">
       <a href="../u_e-mailcow_ui-config/" class="md-nav__link">
         Configuration
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../u_e-mailcow_ui-css/" class="md-nav__link">
+        CSS overrides
       </a>
     </li>
   
@@ -1581,30 +1619,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../u_e-change_config/" class="md-nav__link">
-        Adjust Service Configurations
-      </a>
-    </li>
-  
-
-          
-            
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../u_e-deinstall/" class="md-nav__link">
-        Deinstall
-      </a>
-    </li>
-  
-
-          
-            
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../u_e-reeanble-weak-protocols/" class="md-nav__link">
         Re-enable TLS 1.0 and TLS 1.1
       </a>
@@ -1809,6 +1823,18 @@
   
   
     <li class="md-nav__item">
+      <a href="../third_party-borgmatic/" class="md-nav__link">
+        Borgmatic Backup
+      </a>
+    </li>
+  
+
+          
+            
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../third_party-exchange_onprem/" class="md-nav__link">
         Exchange Hybrid Setup
       </a>
@@ -1988,7 +2014,7 @@
         
           <li class="md-nav__item">
   <a href="#email-test-for-spf-dkim-and-dmarc" class="md-nav__link">
-    Email Test for SPF, DKIM and DMARC:
+    Email test for SPF, DKIM and DMARC:
   </a>
   
 </li>
@@ -2086,8 +2112,11 @@ _submission._tcp    IN SRV     0        1      587      mail.example.org. (your 
 </ul>
 <h2 id="misc">Misc<a class="headerlink" href="#misc" title="Permanent link">&para;</a></h2>
 <h3 id="optional-dmarc-statistics">Optional DMARC Statistics<a class="headerlink" href="#optional-dmarc-statistics" title="Permanent link">&para;</a></h3>
-<p>If you are interested in statistics, you can additionally register with some of the many below DMARC statistic services, or self-host your own.</p>
-<p><strong>NOTE:</strong> It is worth considering that if you request DMARC statistic reports to your mailcow server, if there are issues with that domain you may not get accurate results. You can consider using an alternative email domain for recieving DMARC reports.</p>
+<p>If you are interested in statistics, you can additionally register with some of the many below DMARC statistic services - or self-host your own.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+</div>
+<p>It is worth considering that if you request DMARC statistic reports to your mailcow server and your mailcow server is not configured correctly to receive these reports, you may not get accurate and complete results. Please consider using an alternative email domain for receiving DMARC reports.</p>
 <p>It is worth mentioning, that the following suggestions are not a comprehensive list of all services and tools avaialble, but only a small few of the many choices.</p>
 <ul>
 <li><a href="https://gmail.com/postmaster">Postmaster Tool</a></li>
@@ -2096,12 +2125,13 @@ _submission._tcp    IN SRV     0        1      587      mail.example.org. (your 
 <li><a href="https://dmarc.postmarkapp.com">Postmark</a></li>
 <li><a href="https://dmarcian.com/">Dmarcian</a></li>
 </ul>
-<p><strong>NOTE:</strong> The services may provide you with a TXT record, which you would insert into your DNS records as the provider specifies. This record will give you details about spam-classified mails by your domain. However, please ensure to read the providers documentation from the service you choose, as this process may vary and not all providers may use a TXT record.</p>
-<h3 id="email-test-for-spf-dkim-and-dmarc">Email Test for SPF, DKIM and DMARC:<a class="headerlink" href="#email-test-for-spf-dkim-and-dmarc" title="Permanent link">&para;</a></h3>
-<p>To test send an email to the email below and wait for a reply:</p>
-<p><a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#99;&#104;&#101;&#99;&#107;&#45;&#97;&#117;&#116;&#104;&#64;&#118;&#101;&#114;&#105;&#102;&#105;&#101;&#114;&#46;&#112;&#111;&#114;&#116;&#50;&#53;&#46;&#99;&#111;&#109;">&#99;&#104;&#101;&#99;&#107;&#45;&#97;&#117;&#116;&#104;&#64;&#118;&#101;&#114;&#105;&#102;&#105;&#101;&#114;&#46;&#112;&#111;&#114;&#116;&#50;&#53;&#46;&#99;&#111;&#109;</a></p>
-<p>You will get a report back that looks like the following:</p>
-<p><div class="highlight"><pre><span></span><code>==========================================================
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+</div>
+<p>These services may provide you with a TXT record you need to insert into your DNS records as the provider specifies. Please ensure to read the providers documentation from the service you choose as this process may vary.</p>
+<h3 id="email-test-for-spf-dkim-and-dmarc">Email test for SPF, DKIM and DMARC:<a class="headerlink" href="#email-test-for-spf-dkim-and-dmarc" title="Permanent link">&para;</a></h3>
+<p>To run a rudimentary email authentication check, send a mail to <code>check-auth at verifier.port25.com</code> and wait for a reply. You will find a report similar to the following:</p>
+<div class="highlight"><pre><span></span><code>==========================================================
 Summary of Results
 ==========================================================
 SPF check:          pass
@@ -2115,7 +2145,7 @@ Details:
 ==========================================================
 ....
 </code></pre></div>
-The full report will contain more technical details this is just the first section, we found this to be quite usful for testing both outgoing mail and spam scores.</p>
+<p>The full report will contain more technical details.</p>
 <h3 id="fully-qualified-domain-name-fqdn">Fully Qualified Domain Name (FQDN)<a class="headerlink" href="#fully-qualified-domain-name-fqdn" title="Permanent link">&para;</a></h3>
 <div class="footnote">
 <hr />
@@ -2143,7 +2173,8 @@ The full report will contain more technical details this is just the first secti
   
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
-        <a href="../prerequisite-system/" class="md-footer__link md-footer__link--prev" rel="prev">
+        
+        <a href="../prerequisite-system/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Prepare your system" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -2158,7 +2189,8 @@ The full report will contain more technical details this is just the first secti
         </a>
       
       
-        <a href="../i_u_m_install/" class="md-footer__link md-footer__link--next" rel="next">
+        
+        <a href="../i_u_m_install/" class="md-footer__link md-footer__link--next" aria-label="Next: Installation" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
@@ -2219,10 +2251,10 @@ The full report will contain more technical details this is just the first secti
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../assets/javascripts/workers/search.fe42c31b.min.js", "version": null}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.b0710199.min.js", "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.4ea5477f.min.js"></script>
+      <script src="../assets/javascripts/bundle.76f349be.min.js"></script>
       
         <script src="../clients.js"></script>
       
