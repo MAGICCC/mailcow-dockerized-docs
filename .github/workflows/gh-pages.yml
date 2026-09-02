@@ -26,11 +26,7 @@ jobs:
       - name: Build site 🔧
         run: |
           source ./venv/bin/activate
-          mkdocs build --verbose --clean
-
-      - name: Fixing redirects 🚧
-        run: |
-          bash .github/workflows/fix_redirects.sh
+          python build_i18n_site.py
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.9.0
