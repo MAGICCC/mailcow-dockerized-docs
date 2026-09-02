@@ -1,0 +1,398 @@
+# ============================================================================
+# Zensical configuration for mailcow: dockerized documentation
+# Converted from mkdocs.yml (Material for MkDocs 9.7.x).
+#
+# NOTE: Zensical reads mkdocs.yml natively, so this file is the "modern
+# format" equivalent. See MIGRATION-NOTES.md for plugin caveats (i18n,
+# redirects, social, git dates, glightbox are not yet supported).
+# ============================================================================
+
+[project]
+site_name = "mailcow: dockerized documentation"
+site_url = "https://docs.mailcow.email/"
+copyright = "Copyright &copy; <script>document.write(new Date().getFullYear())</script> mailcow Team & Community"
+
+repo_name = "mailcow/mailcow-dockerized"
+repo_url = "https://github.com/mailcow/mailcow-dockerized"
+edit_uri = "../mailcow-dockerized-docs/edit/master/docs/"
+
+extra_css = ["assets/stylesheets/extra.css"]
+extra_javascript = ["assets/javascripts/client.js"]
+
+# ----------------------------------------------------------------------------
+# Theme
+# ----------------------------------------------------------------------------
+nav = [
+  { "Information & Support" = "index.md" },
+  { "Get started" = [
+    { "Prepare your system" = "getstarted/prerequisite-system.md" },
+    { "DNS setup" = "getstarted/prerequisite-dns.md" },
+    { "Install mailcow" = "getstarted/install.md" }
+  ] },
+  { "Maintaining mailcow" = [
+    { "Update" = "maintenance/update.md" },
+    { "Migration" = "maintenance/migration.md" },
+    { "Deinstallation" = "maintenance/deinstall.md" }
+  ] },
+  { "Backup & Restore" = [
+    { "Component backup & restore" = [
+      { "Backup" = "backup_restore/b_n_r-backup.md" },
+      { "Restore" = "backup_restore/b_n_r-restore.md" },
+      { "Export" = "backup_restore/b_n_r-backup-export.md" }
+    ] },
+    { "Cold-standby (rolling backup)" = "backup_restore/b_n_r-coldstandby.md" },
+    { "Manual backups" = [
+      { "Maildir" = "backup_restore/b_n_r-backup_restore-maildir.md" },
+      { "MySQL (mysqldump)" = "backup_restore/b_n_r-backup_restore-mysql.md" }
+    ] },
+    { "mailcow-internal backups" = [
+      { "Recover accidentally deleted data" = "backup_restore/b_n_r-accidental_deletion.md" }
+    ] }
+  ] },
+  { "Post Installation Tasks" = [
+    { "Advanced SSL" = "post_installation/firststeps-ssl.md" },
+    { "SSL with DNS Challenge" = "post_installation/firststeps-ssl-dns.md" },
+    { "Authorize Watchdog and Bounce Mails" = "post_installation/firststeps-authorize_watchdog_and_bounces.md" },
+    { "Disable IPv6" = "post_installation/firststeps-disable_ipv6.md" },
+    { "DMARC Reporting" = "post_installation/firststeps-dmarc_reporting.md" },
+    { "IP bindings" = "post_installation/firststeps-ip_bindings.md" },
+    { "Local MTA on Docker host" = "post_installation/firststeps-local_mta.md" },
+    { "Logging" = "post_installation/firststeps-logging.md" },
+    { "Setting up MTA-STS" = "post_installation/setup-mta-sts.md" },
+    { "Reverse Proxy" = [
+      { "Overview" = "post_installation/reverse-proxy/r_p.md" },
+      { "Apache 2.4" = "post_installation/reverse-proxy/r_p-apache24.md" },
+      { "Nginx" = "post_installation/reverse-proxy/r_p-nginx.md" },
+      { "HAProxy (community supported)" = "post_installation/reverse-proxy/r_p-haproxy.md" },
+      { "Traefik v3 (community supported)" = "post_installation/reverse-proxy/r_p-traefik3.md" },
+      { "Caddy v2 (community supported)" = "post_installation/reverse-proxy/r_p-caddy2.md" },
+      { "Pangolin (community supported)" = "post_installation/reverse-proxy/r_p-pangolin.md" }
+    ] },
+    { "SNAT" = "post_installation/firststeps-snat.md" },
+    { "Sync job migration" = "post_installation/firststeps-sync_jobs_migration.md" }
+  ] },
+  { "Models" = [
+    { "ACL" = "models/model-acl.md" },
+    { "Password hashing" = "models/model-passwd.md" },
+    { "Sender and receiver model" = "models/model-sender_rcv.md" }
+  ] },
+  { "General Troubleshooting" = [
+    { "Introduction" = "troubleshooting/debug.md" },
+    { "Admin login to SOGo" = "troubleshooting/debug-admin_login_sogo.md" },
+    { "Advanced: Find memory leaks in Rspamd" = "troubleshooting/debug-rspamd_memory_leaks.md" },
+    { "Attach to a Container" = "troubleshooting/debug-attach_service.md" },
+    { "Common Problems" = "troubleshooting/debug-common_problems.md" },
+    { "Google SafeBrowsing issues" = "troubleshooting/debug-google_safe_browsing.md" },
+    { "Logs" = "troubleshooting/debug-logs.md" },
+    { "Manual MySQL upgrade" = "troubleshooting/debug-mysql_upgrade.md" },
+    { "Recover crashed Aria storage engine" = "troubleshooting/debug-mysql_aria.md" },
+    { "Remove Persistent Data" = "troubleshooting/debug-rm_volumes.md" },
+    { "Resend Quarantine Notifications" = "troubleshooting/debug-resend-quarantine-notifications.md" },
+    { "Reset Passwords (incl. SQL)" = "troubleshooting/debug-reset_pw.md" },
+    { "Reset TLS certificates" = "troubleshooting/debug-reset_tls.md" },
+    { "Use latest SOGo Nightly build" = "troubleshooting/debug-sogo_nightly.md" }
+  ] },
+  { "Manual/Guides/Examples" = [
+    { "mailcow UI" = [
+      { "Blacklist / Whitelist" = "manual-guides/mailcow-UI/u_e-mailcow_ui-bl_wl.md" },
+      { "Configuration" = "manual-guides/mailcow-UI/u_e-mailcow_ui-config.md" },
+      { "CSS overrides" = "manual-guides/mailcow-UI/u_e-mailcow_ui-css.md" },
+      { "Forgot Password Feature" = "manual-guides/mailcow-UI/u_e-mailcow_ui-forgot_password.md" },
+      { "Netfilter" = "manual-guides/mailcow-UI/u_e-mailcow_ui-netfilter.md" },
+      { "Notification templates" = "manual-guides/mailcow-UI/u_e-mailcow_ui-notification-templates.md" },
+      { "Pushover" = "manual-guides/mailcow-UI/u_e-mailcow_ui-pushover.md" },
+      { "Spamfilter" = "manual-guides/mailcow-UI/u_e-mailcow_ui-spamfilter.md" },
+      { "Sub-addressing" = "manual-guides/mailcow-UI/u_e-mailcow_ui-sub_addressing.md" },
+      { "Tags (for Domains and Mailboxes)" = "manual-guides/mailcow-UI/u_e-mailcow_ui-tags.md" },
+      { "Temporary email aliases" = "manual-guides/mailcow-UI/u_e-mailcow_ui-spamalias.md" },
+      { "Two-Factor Authentication" = "manual-guides/mailcow-UI/u_e-mailcow_ui-tfa.md" },
+      { "WebAuthn / FIDO2" = "manual-guides/mailcow-UI/u_e-mailcow_ui-fido.md" },
+      { "LDAP" = "manual-guides/mailcow-UI/u_e-mailcow_ui-ldap.md" },
+      { "Keycloak" = "manual-guides/mailcow-UI/u_e-mailcow_ui-keycloak.md" },
+      { "Generic-OIDC" = "manual-guides/mailcow-UI/u_e-mailcow_ui-generic-oidc.md" }
+    ] },
+    { "Postfix" = [
+      { "Unauthenticated Relaying" = "manual-guides/Postfix/u_e-postfix-unauthenticated-relaying.md" },
+      { "Custom transport maps" = "manual-guides/Postfix/u_e-postfix-custom_transport.md" },
+      { "Customize/Expand main.cf" = "manual-guides/Postfix/u_e-postfix-extra_cf.md" },
+      { "Disable Sender Addresses Verification" = "manual-guides/Postfix/u_e-postfix-disable_sender_verification.md" },
+      { "Hardening Ciphers" = "manual-guides/Postfix/u_e-postfix-harden_ciphers.md" },
+      { "Max. message size (attachment size)" = "manual-guides/Postfix/u_e-postfix-attachment_size.md" },
+      { "Relayhosts" = "manual-guides/Postfix/u_e-postfix-relayhost.md" },
+      { "Statistics with pflogsumm" = "manual-guides/Postfix/u_e-postfix-pflogsumm.md" },
+      { "TLS-Policy override" = "manual-guides/Postfix/u_e-postfix-tls_policy_override.md" },
+      { "Whitelist IP in Postscreen" = "manual-guides/Postfix/u_e-postfix-postscreen_whitelist.md" }
+    ] },
+    { "Unbound" = [
+      { "Using an external DNS service" = "manual-guides/Unbound/u_e-unbound-fwd.md" }
+    ] },
+    { "Dovecot" = [
+      { "Customize/Expand dovecot.conf" = "manual-guides/Dovecot/u_e-dovecot-extra_conf.md" },
+      { "Enable \"any\" ACL settings" = "manual-guides/Dovecot/u_e-dovecot-any_acl.md" },
+      { "Expunge a Users mails" = "manual-guides/Dovecot/u_e-dovecot-expunge.md" },
+      { "Full-Text Search" = "manual-guides/Dovecot/u_e-dovecot-fts.md" },
+      { "Hardening Ciphers" = "manual-guides/Dovecot/u_e-dovecot-harden_ciphers.md" },
+      { "IMAP IDLE interval" = "manual-guides/Dovecot/u_e-dovecot-idle_interval.md" },
+      { "Lazy Expunge (Dovecot Plugin)" = "manual-guides/Dovecot/u_e-dovecot-lazy_expunge.md" },
+      { "Mail crypt" = "manual-guides/Dovecot/u_e-dovecot-mail-crypt.md" },
+      { "More Examples with DOVEADM" = "manual-guides/Dovecot/u_e-dovecot-more.md" },
+      { "Move Maildir (vmail)" = "manual-guides/Dovecot/u_e-dovecot-vmail-volume.md" },
+      { "Performance Optimizations" = "manual-guides/Dovecot/u_e-dovecot-performance.md" },
+      { "Public folders" = "manual-guides/Dovecot/u_e-dovecot-public_folder.md" },
+      { "Static master user" = "manual-guides/Dovecot/u_e-dovecot-static_master.md" },
+      { "Vacation replies for catchall addresses" = "manual-guides/Dovecot/u_e-dovecot-catchall_vacation.md" }
+    ] },
+    { "Nginx" = [
+      { "Create subdomain webmail.example.org" = "manual-guides/Nginx/u_e-nginx_webmail-site.md" },
+      { "Custom sites" = "manual-guides/Nginx/u_e-nginx_custom.md" }
+    ] },
+    { "Watchdog" = [
+      { "Thresholds" = "manual-guides/Watchdog/u_e-watchdog-thresholds.md" }
+    ] },
+    { "Redis" = "manual-guides/Redis/u_e-redis.md" },
+    { "Rspamd" = [
+      { "General Settings" = "manual-guides/Rspamd/u_e-rspamd-general.md" },
+      { "Tweaks" = "manual-guides/Rspamd/u-e-rspamd-tweaks.md" },
+      { "Work with Spam Data" = "manual-guides/Rspamd/u-e-rspamd-work-with-spamdata.md" },
+      { "Disable Greylisting" = "manual-guides/Rspamd/u_e-rspamd-disable-greylisting.md" },
+      { "Add Additional Modules" = "manual-guides/Rspamd/u-e-rspamd-add-additional-modules.md" }
+    ] },
+    { "ClamAV" = [
+      { "Whitelist" = "manual-guides/ClamAV/u_e-clamav-whitelist.md" },
+      { "Additional Databases" = "manual-guides/ClamAV/u_e-clamav-additional_dbs.md" }
+    ] },
+    { "SOGo" = "manual-guides/SOGo/u_e-sogo.md" },
+    { "Docker" = [
+      { "Customize Dockerfiles" = "manual-guides/Docker/u_e-docker-cust_dockerfiles.md" }
+    ] },
+    { "Why unbound?" = "manual-guides/u_e-why_unbound.md" },
+    { "Autodiscover / Autoconfig" = "manual-guides/u_e-autodiscover_config.md" },
+    { "Redirect HTTP to HTTPS" = "manual-guides/u_e-80_to_443.md" },
+    { "Re-enable TLS 1.0 and TLS 1.1" = "manual-guides/u_e-reeanble-weak-protocols.md" },
+    { "Run scripts before and after updates" = "manual-guides/u_e-update-hooks.md" }
+  ] },
+  { "Client Configuration" = [
+    { "Overview" = "client/client.md" },
+    { "Android" = "client/client-android.md" },
+    { "Apple macOS / iOS" = "client/client-apple.md" },
+    { "eM Client" = "client/client-emclient.md" },
+    { "KDE Kontact" = "client/client-kontact.md" },
+    { "Microsoft Outlook" = "client/client-outlook.md" },
+    { "Mozilla Thunderbird" = "client/client-thunderbird.md" },
+    { "Manual configuration" = "client/client-manual.md" }
+  ] },
+  { "Third party apps (community managed)" = [
+    { "AbuseIPDB Integration" = "third_party/abuseipdb/third_party-abuseipdb.md" },
+    { "Borgmatic Backup" = "third_party/borgmatic/third_party-borgmatic.md" },
+    { "CheckMK" = "third_party/checkmk/u_e-checkmk.md" },
+    { "Exchange Hybrid Setup" = "third_party/exchange_onprem/third_party-exchange_onprem.md" },
+    { "Gitea" = "third_party/gitea/third_party-gitea.md" },
+    { "Gogs" = "third_party/gogs/third_party-gogs.md" },
+    { "mailcow Logs Viewer" = "third_party/mailcow-logs-viewer/third_party-mailcow-logs-viewer.md" },
+    { "Mailman 3" = "third_party/mailman3/third_party-mailman3.md" },
+    { "Mailpiler Integration" = "third_party/mailpiler/third_party-mailpiler_integration.md" },
+    { "Nextcloud" = "third_party/nextcloud/third_party-nextcloud.md" },
+    { "Portainer" = "third_party/portainer/third_party-portainer.md" },
+    { "Roundcube" = "third_party/roundcube/third_party-roundcube.md" },
+    { "Prometheus Exporter" = "third_party/prometheus_exporter/third_party-prometheus_exporter.md" }
+  ] },
+]
+
+[project.theme]
+# "classic" reproduces the Material for MkDocs look mailcow used (theme.name: material)
+variant = "classic"
+custom_dir = "overrides"
+language = "en"
+logo = "assets/images/logo.svg"
+favicon = "assets/images/favicon.png"
+features = [
+    "navigation.top",
+    "navigation.tracking",
+    "announce.dismiss",
+    "content.tabs.link",
+    "content.tooltips",
+    "content.code.copy",
+    "search.share",
+    "search.highlight",
+]
+
+# Palette: automatic (system), light, dark — mirrors the original three toggles
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+toggle.icon = "material/brightness-auto"
+toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+toggle.icon = "material/brightness-7"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+toggle.icon = "material/brightness-4"
+toggle.name = "Switch to system preference"
+
+# ----------------------------------------------------------------------------
+# Extra (social links shown in the footer)
+# ----------------------------------------------------------------------------
+[[project.extra.social]]
+icon = "fontawesome/solid/globe"
+link = "https://mailcow.email"
+[[project.extra.social]]
+icon = "fontawesome/brands/github-alt"
+link = "https://github.com/mailcow"
+[[project.extra.social]]
+icon = "fontawesome/brands/x-twitter"
+link = "https://x.com/mailcow_email"
+[[project.extra.social]]
+icon = "fontawesome/brands/mastodon"
+link = "https://mailcow.social/@doncow"
+
+# ----------------------------------------------------------------------------
+# Markdown extensions (faithful map of the mkdocs.yml list)
+# ----------------------------------------------------------------------------
+[project.markdown_extensions.abbr]
+[project.markdown_extensions.attr_list]
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.md_in_html]
+[project.markdown_extensions.tables]
+[project.markdown_extensions.footnotes]
+[project.markdown_extensions.toc]
+permalink = true
+[project.markdown_extensions.pymdownx.magiclink]
+[project.markdown_extensions.pymdownx.tasklist]
+custom_checkbox = true
+[project.markdown_extensions.pymdownx.mark]
+[project.markdown_extensions.pymdownx.caret]
+[project.markdown_extensions.pymdownx.details]
+[project.markdown_extensions.pymdownx.tilde]
+[project.markdown_extensions.pymdownx.betterem]
+[project.markdown_extensions.pymdownx.snippets]
+auto_append = ["includes/abbreviations.md"]
+[project.markdown_extensions.pymdownx.superfences]
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true
+[project.markdown_extensions.pymdownx.emoji]
+emoji_index = "zensical.extensions.emoji.twemoji"
+emoji_generator = "zensical.extensions.emoji.to_svg"
+
+# ----------------------------------------------------------------------------
+# Navigation (converted from mkdocs.yml)
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+# Redirects (supported since Zensical 0.0.5x) — from mkdocs.yml redirect_maps
+# ----------------------------------------------------------------------------
+[project.plugins.redirects.redirect_maps]
+"u_e-mailpiler-integration.md" = "third_party/mailpiler/third_party-mailpiler_integration.en.md"
+"b_n_r_accidental_deletion.md" = "backup_restore/b_n_r-accidental_deletion.en.md"
+"debug-reset-tls.md" = "troubleshooting/debug-reset_tls.en.md"
+"b_n_r-accidental_deletion.md" = "backup_restore/b_n_r-accidental_deletion.en.md"
+"b_n_r-backup_restore-maildir.md" = "backup_restore/b_n_r-backup_restore-maildir.en.md"
+"b_n_r-backup_restore-mysql.md" = "backup_restore/b_n_r-backup_restore-mysql.en.md"
+"b_n_r-coldstandby.md" = "backup_restore/b_n_r-coldstandby.en.md"
+"b_n_r-restore.md" = "backup_restore/b_n_r-restore.en.md"
+"b_n_r_backup.md" = "backup_restore/b_n_r-backup.en.md"
+"client-android.md" = "client/client-android.en.md"
+"client-apple.md" = "client/client-apple.en.md"
+"client-emclient.md" = "client/client-emclient.en.md"
+"client-kontact.md" = "client/client-kontact.en.md"
+"client-manual.md" = "client/client-manual.en.md"
+"client-outlook.md" = "client/client-outlook.en.md"
+"client-thunderbird.md" = "client/client-thunderbird.en.md"
+"debug-admin_login_sogo.md" = "troubleshooting/debug-admin_login_sogo.en.md"
+"debug-attach_service.md" = "troubleshooting/debug-attach_service.en.md"
+"debug-common_problems.md" = "troubleshooting/debug-common_problems.en.md"
+"debug-logs.md" = "troubleshooting/debug-logs.en.md"
+"debug-mysql_aria.md" = "troubleshooting/debug-mysql_aria.en.md"
+"debug-mysql_upgrade.md" = "troubleshooting/debug-mysql_upgrade.en.md"
+"debug-reset_pw.md" = "troubleshooting/debug-reset_pw.en.md"
+"debug-reset_tls.md" = "troubleshooting/debug-reset_tls.en.md"
+"debug-rm_volumes.md" = "troubleshooting/debug-rm_volumes.en.md"
+"debug-rspamd_memory_leaks.md" = "troubleshooting/debug-rspamd_memory_leaks.en.md"
+"firststeps-disable_ipv6.md" = "post_installation/firststeps-disable_ipv6.en.md"
+"firststeps-dmarc_reporting.md" = "post_installation/firststeps-dmarc_reporting.en.md"
+"firststeps-ip_bindings.md" = "post_installation/firststeps-ip_bindings.en.md"
+"firststeps-local_mta.md" = "post_installation/firststeps-local_mta.en.md"
+"firststeps-logging.md" = "post_installation/firststeps-logging.en.md"
+"firststeps-rp.md" = "post_installation/reverse-proxy/r_p.en.md"
+"firststeps-snat.md" = "post_installation/firststeps-snat.en.md"
+"firststeps-ssl.md" = "post_installation/firststeps-ssl.en.md"
+"firststeps-ssl-dns.md" = "post_installation/firststeps-ssl-dns.en.md"
+"firststeps-sync_jobs_migration.md" = "post_installation/firststeps-sync_jobs_migration.en.md"
+"deinstall.md" = "maintenance/deinstall.en.md"
+"install.md" = "getstarted/install.en.md"
+"migration.md" = "maintenance/migration.en.md"
+"update.md" = "maintenance/update.en.md"
+"mailcow-dockerized-docs/i_u_m/i_u_m_install.md" = "getstarted/install.en.md"
+"model-acl.md" = "models/model-acl.en.md"
+"model-passwd.md" = "models/model-passwd.en.md"
+"model-sender_rcv.md" = "models/model-sender_rcv.en.md"
+"prerequisite-dns.md" = "getstarted/prerequisite-dns.en.md"
+"prerequisite-system.md" = "getstarted/prerequisite-system.en.md"
+"third_party-abuseipdb.md" = "third_party/abuseipdb/third_party-abuseipdb.en.md"
+"third_party-borgmatic.md" = "third_party/borgmatic/third_party-borgmatic.en.md"
+"third_party-exchange_onprem.md" = "third_party/exchange_onprem/third_party-exchange_onprem.en.md"
+"third_party-gitea.md" = "third_party/gitea/third_party-gitea.en.md"
+"third_party-gogs.md" = "third_party/gogs/third_party-gogs.en.md"
+"third_party-mailman3.md" = "third_party/mailman3/third_party-mailman3.en.md"
+"third_party-mailpiler_integration.md" = "third_party/mailpiler/third_party-mailpiler_integration.en.md"
+"third_party-nextcloud.md" = "third_party/nextcloud/third_party-nextcloud.en.md"
+"third_party-portainer.md" = "third_party/portainer/third_party-portainer.en.md"
+"third_party-roundcube.md" = "third_party/roundcube/third_party-roundcube.en.md"
+"u_e-80_to_443.md" = "manual-guides/u_e-80_to_443.en.md"
+"u_e-autodiscover_config.md" = "manual-guides/u_e-autodiscover_config.en.md"
+"u_e-docker-cust_dockerfiles.md" = "manual-guides/Docker/u_e-docker-cust_dockerfiles.en.md"
+"u_e-dovecot-any_acl.md" = "manual-guides/Dovecot/u_e-dovecot-any_acl.en.md"
+"u_e-dovecot-catchall_vacation.md" = "manual-guides/Dovecot/u_e-dovecot-catchall_vacation.en.md"
+"u_e-dovecot-expunge.md" = "manual-guides/Dovecot/u_e-dovecot-expunge.en.md"
+"u_e-dovecot-extra_conf.md" = "manual-guides/Dovecot/u_e-dovecot-extra_conf.en.md"
+"u_e-dovecot-fts.md" = "manual-guides/Dovecot/u_e-dovecot-fts.en.md"
+"u_e-dovecot-idle_interval.md" = "manual-guides/Dovecot/u_e-dovecot-idle_interval.en.md"
+"u_e-dovecot-mail-crypt.md" = "manual-guides/Dovecot/u_e-dovecot-mail-crypt.en.md"
+"u_e-dovecot-more.md" = "manual-guides/Dovecot/u_e-dovecot-more.en.md"
+"u_e-dovecot-public_folder.md" = "manual-guides/Dovecot/u_e-dovecot-public_folder.en.md"
+"u_e-dovecot-static_master.md" = "manual-guides/Dovecot/u_e-dovecot-static_master.en.md"
+"u_e-dovecot-vmail-volume.md" = "manual-guides/Dovecot/u_e-dovecot-vmail-volume.en.md"
+"u_e-mailcow_ui-bl_wl.md" = "manual-guides/mailcow-UI/u_e-mailcow_ui-bl_wl.en.md"
+"u_e-mailcow_ui-config.md" = "manual-guides/mailcow-UI/u_e-mailcow_ui-config.en.md"
+"u_e-mailcow_ui-css.md" = "manual-guides/mailcow-UI/u_e-mailcow_ui-css.en.md"
+"u_e-mailcow_ui-fido.md" = "manual-guides/mailcow-UI/u_e-mailcow_ui-fido.en.md"
+"u_e-mailcow_ui-netfilter.md" = "manual-guides/mailcow-UI/u_e-mailcow_ui-netfilter.en.md"
+"u_e-mailcow_ui-notification-templates.md" = "manual-guides/mailcow-UI/u_e-mailcow_ui-notification-templates.en.md"
+"u_e-mailcow_ui-pushover.md" = "manual-guides/mailcow-UI/u_e-mailcow_ui-pushover.en.md"
+"u_e-mailcow_ui-spamalias.md" = "manual-guides/mailcow-UI/u_e-mailcow_ui-spamalias.en.md"
+"u_e-mailcow_ui-spamfilter.md" = "manual-guides/mailcow-UI/u_e-mailcow_ui-spamfilter.en.md"
+"u_e-mailcow_ui-sub_addressing.md" = "manual-guides/mailcow-UI/u_e-mailcow_ui-sub_addressing.en.md"
+"u_e-mailcow_ui-tags.md" = "manual-guides/mailcow-UI/u_e-mailcow_ui-tags.en.md"
+"u_e-mailcow_ui-tfa.md" = "manual-guides/mailcow-UI/u_e-mailcow_ui-tfa.en.md"
+"u_e-nginx_custom.md" = "manual-guides/Nginx/u_e-nginx_custom.en.md"
+"u_e-nginx_webmail-site.md" = "manual-guides/Nginx/u_e-nginx_webmail-site.en.md"
+"u_e-postfix-attachment_size.md" = "manual-guides/Postfix/u_e-postfix-attachment_size.en.md"
+"u_e-postfix-custom_transport.md" = "manual-guides/Postfix/u_e-postfix-custom_transport.en.md"
+"u_e-postfix-disable_sender_verification.md" = "manual-guides/Postfix/u_e-postfix-disable_sender_verification.en.md"
+"u_e-postfix-extra_cf.md" = "manual-guides/Postfix/u_e-postfix-extra_cf.en.md"
+"u_e-postfix-pflogsumm.md" = "manual-guides/Postfix/u_e-postfix-pflogsumm.en.md"
+"u_e-postfix-postscreen_whitelist.md" = "manual-guides/Postfix/u_e-postfix-postscreen_whitelist.en.md"
+"u_e-postfix-relayhost.md" = "manual-guides/Postfix/u_e-postfix-relayhost.en.md"
+"u_e-postfix-trust_networks.md" = "manual-guides/Postfix/u_e-postfix-unauthenticated-relaying.en.md"
+"u_e-redis.md" = "manual-guides/Redis/u_e-redis.en.md"
+"u_e-reeanble-weak-protocols.md" = "manual-guides/u_e-reeanble-weak-protocols.en.md"
+"u_e-sogo.md" = "manual-guides/SOGo/u_e-sogo.en.md"
+"u_e-unbound-fwd.md" = "manual-guides/Unbound/u_e-unbound-fwd.en.md"
+"u_e-update-hooks.md" = "manual-guides/u_e-update-hooks.en.md"
+"u_e-watchdog-thresholds.md" = "manual-guides/Watchdog/u_e-watchdog-thresholds.en.md"
+"u_e-webmail-site.md" = "manual-guides/Nginx/u_e-nginx_webmail-site.en.md"
+"u_e-why_unbound.md" = "manual-guides/u_e-why_unbound.en.md"
+"backup.md" = "backup_restore/b_n_r-backup.en.md"
+"client.md" = "client/client.en.md"
+"debug.md" = "troubleshooting/debug.en.md"
+"disable-greylisting.md" = "manual-guides/Rspamd/u_e-rspamd-disable-greylisting.en.md"
+"restore.md" = "backup_restore/b_n_r-restore.en.md"
+"rspamd-ui.md" = "manual-guides/Rspamd/u_e-rspamd-general.en.md"
+"rspamd.md" = "manual-guides/Rspamd/u_e-rspamd-general.en.md"
+"unauthenticated-relaying.md" = "manual-guides/Postfix/u_e-postfix-unauthenticated-relaying.en.md"
+"uninstall.md" = "maintenance/deinstall.en.md"
+"sogo-nightly.md" = "troubleshooting/debug-sogo_nightly.en.md"
