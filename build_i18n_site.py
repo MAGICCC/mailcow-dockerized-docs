@@ -1,205 +1,336 @@
 #!/usr/bin/env python3
 """
-Build the bilingual (EN/DE) mailcow docs with Zensical, WITHOUT mkdocs-static-i18n.
+Build the bilingual (EN/DE) mailcow docs with Zensical.
 
-Zensical (as of 0.0.58) has no content-i18n plugin, but it does support a header
-LANGUAGE SELECTOR via [project.extra] alternate. This script reproduces the
-mkdocs-static-i18n "suffix" behaviour manually:
+Tested with Zensical 0.0.71 (October 2026) against mailcow-dockerized-docs.
 
-  1. Split the docs/ tree (foo.en.md / foo.de.md) into two per-language trees,
-     stripping the language suffix (with fallback to the default language).
-  2. Generate a zensical.toml per language (English at /, German at /de/), each
-     wired with the alternate language selector. German nav titles are translated
-     using the nav_translations already present in mkdocs.yml.
-  3. Build both and assemble a combined site: English at the root, German at /de/.
+Zensical reads mailcow's mkdocs.yml natively and handles the theme, Markdown
+extensions, search, redirects, social cards and glightbox itself. Three plugins
+have no Zensical equivalent yet, so this script does their job:
 
-Run from the repository root (where mkdocs.yml lives):
-    python build_i18n_site.py
-Output: ./site  (open ./site/index.html and ./site/de/index.html)
+  i18n (mkdocs-static-i18n)
+      Splits docs/ (page.en.md / page.de.md) into one tree per language, falling
+      back to English where a translation is missing, rewrites links that point
+      at page.en.md, builds each tree and assembles English at / and German at
+      /de/ with the header language selector. German nav titles and site name
+      come from the i18n plugin settings in mkdocs.yml.
+  git-revision-date-localized
+      Writes each page's last commit date into its front matter, which the theme
+      shows at the bottom of the page. Needs the full git history (mailcow's CI
+      already checks out with fetch-depth: 0).
+  open-in-new-tab
+      Adds a small script that opens external links in a new tab, plus the
+      external-link icon when add_icon is set.
 
-Requires: pyyaml, zensical  (pip install pyyaml zensical)
+Every other setting is read from mkdocs.yml at build time, so changes there
+are picked up automatically.
+
+Usage, from the repository root (Python 3.11+, PyYAML comes with Zensical):
+    pip install zensical
+    python build_i18n_site.py        # -> ./site (English) and ./site/de (German)
 """
-import re, shutil, subprocess, sys
+import copy
+import re
+import shutil
+import subprocess
+import sys
+from datetime import datetime, timezone
 from pathlib import Path
-
-ROOT    = Path(__file__).resolve().parent
-DOCS    = ROOT / "docs"
-WORK    = ROOT / ".zensical-i18n"      # scratch dir for the two per-language projects
-OUT     = ROOT / "site"                # final combined output
-LANGS   = ["en", "de"]
-DEFAULT = "en"
-LANG_RE = re.compile(r"^(.*)\.(en|de)\.([^.]+)$")
+from urllib.parse import urlparse
 
 import yaml
-class _L(yaml.SafeLoader): pass
-_L.add_multi_constructor("tag:yaml.org,2002:python/name:", lambda *a: None)
-mk = yaml.load((ROOT / "mkdocs.yml").read_text(), Loader=_L)
 
-nav, navtr, redirect_maps = mk["nav"], {}, {}
-for p in mk.get("plugins", []):
-    if isinstance(p, dict) and "i18n" in p:
-        for lc in p["i18n"]["languages"]:
-            if lc.get("locale") == "de":
-                navtr = lc.get("nav_translations", {})
-    if isinstance(p, dict) and "redirects" in p:
-        redirect_maps = p["redirects"].get("redirect_maps", {})
+ROOT = Path(__file__).resolve().parent
+DOCS = ROOT / "docs"
+OUT = ROOT / "site"
+WORK = ROOT / ".cache" / "zensical-i18n"             # per-language projects (.cache is gitignored)
+SOCIAL_CACHE = ROOT / ".cache" / "plugin" / "social"  # font and card cache shared by both builds
+
+# Plugins this script replaces; they are removed from the generated configs.
+HANDLED = {"i18n", "git-revision-date-localized", "open-in-new-tab"}
 
 
-def build_tree(lang: str, dst: Path):
-    """Materialise a single-language docs tree (suffix i18n + fallback_to_default)."""
-    bases, plains = {}, []
-    for f in DOCS.rglob("*"):
-        if not f.is_file():
-            continue
-        rel = f.relative_to(DOCS)
-        m = LANG_RE.match(f.name)
-        if m:
-            base = rel.with_name(f"{m.group(1)}.{m.group(3)}")
-            bases.setdefault(str(base), {})[m.group(2)] = f
+# --- mkdocs.yml in and out, keeping !!python/name tags ----------------------
+
+class PyName(str):
+    """A !!python/name: value from mkdocs.yml, kept so it can be written back."""
+
+
+class Loader(yaml.SafeLoader):
+    pass
+
+
+class Dumper(yaml.SafeDumper):
+    pass
+
+
+def _load_pyname(loader, suffix, node):
+    # Zensical ships its own emoji index and generator.
+    return PyName(suffix.replace("material.extensions.emoji.", "zensical.extensions.emoji."))
+
+
+Loader.add_multi_constructor("tag:yaml.org,2002:python/name:", _load_pyname)
+Dumper.add_representer(
+    PyName, lambda dumper, value: dumper.represent_scalar(f"tag:yaml.org,2002:python/name:{value}", "")
+)
+
+MK = yaml.load((ROOT / "mkdocs.yml").read_text(encoding="utf-8"), Loader=Loader)
+
+
+def _plugins(value):
+    for item in value or []:
+        if isinstance(item, str):
+            yield item, {}
         else:
-            plains.append(rel)
-    for rel in plains:
-        (dst / rel).parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(DOCS / rel, dst / rel)
-    for base, by_lang in bases.items():
-        chosen = by_lang.get(lang) or by_lang.get(DEFAULT)
-        if chosen:
-            (dst / base).parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(chosen, dst / base)
+            (name, conf), = item.items()
+            yield name, conf or {}
 
 
-def _esc(s): return '"' + str(s).replace("\\", "\\\\").replace('"', '\\"') + '"'
-def _tr(t, de): return navtr.get(t, t) if de else t
-def _emit(item, ind, de):
-    pad = "  " * ind
-    if isinstance(item, str):
-        return pad + _esc(item)
-    (title, val), = item.items()
-    if isinstance(val, str):
-        return pad + "{ " + _esc(_tr(title, de)) + " = " + _esc(val) + " }"
-    inner = ",\n".join(_emit(c, ind + 1, de) for c in val)
-    return pad + "{ " + _esc(_tr(title, de)) + " = [\n" + inner + "\n" + pad + "] }"
-def nav_toml(de): return "nav = [\n" + ",\n".join(_emit(t, 1, de) for t in nav) + "\n]\n"
+PLUGINS = list(_plugins(MK.get("plugins")))
+CONF = dict(PLUGINS)
+I18N = CONF.get("i18n") or sys.exit("mkdocs.yml has no i18n plugin configuration")
+LANGS = [lang for lang in I18N["languages"] if lang.get("build", True)]
+DEFAULT = next((lang["locale"] for lang in LANGS if lang.get("default")), LANGS[0]["locale"])
+FALLBACK = I18N.get("fallback_to_default", True)
 
-PALETTE = """[[project.theme.palette]]
-media = "(prefers-color-scheme)"
-toggle.icon = "material/brightness-auto"
-toggle.name = "Switch to light mode"
-[[project.theme.palette]]
-media = "(prefers-color-scheme: light)"
-scheme = "default"
-toggle.icon = "material/brightness-7"
-toggle.name = "Switch to dark mode"
-[[project.theme.palette]]
-media = "(prefers-color-scheme: dark)"
-scheme = "slate"
-toggle.icon = "material/brightness-4"
-toggle.name = "Switch to system preference"
+_LOCALES = "|".join(re.escape(lang["locale"]) for lang in LANGS)
+SUFFIXED = re.compile(rf"^(?P<stem>.+)\.(?P<lang>{_LOCALES})\.(?P<ext>[^.]+)$")
+PAGE_LINK = re.compile(
+    rf"(?P<pre>\]\(\s*<?|\]:\s*<?|href=[\"'])(?P<path>[^)\s\"'<>#]+?)"
+    rf"\.(?:{_LOCALES})\.md/?(?P<anchor>#[^)\s\"'<>]*)?(?=[)\s\"'>]|$)",
+    re.M,
+)
+
+_BASE = urlparse(MK.get("site_url") or "/").path or "/"
+BASE = _BASE if _BASE.endswith("/") else _BASE + "/"
+
+NEWTAB_JS = "assets/javascripts/open-in-new-tab.js"
+NEWTAB_CSS = "assets/stylesheets/open-in-new-tab.css"
+NEWTAB_JS_SOURCE = """\
+/* Opens external links in a new tab (replacement for mkdocs-open-in-new-tab). */
+(function () {
+  function update() {
+    document.querySelectorAll(".md-content a[href]").forEach(function (a) {
+      if (!/^https?:$/.test(a.protocol) || a.hostname === location.hostname) return;
+      if (a.classList.contains("glightbox")) return;
+      a.target = "_blank";
+      a.rel = "noopener";
+      if (!a.querySelector("img")) a.classList.add("external-link");
+    });
+  }
+  if (typeof document$ !== "undefined") document$.subscribe(update);
+  else if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", update);
+  else update();
+})();
 """
-ALTERNATE = """[project.extra]
-alternate = [
-  { name = "English", link = "/", lang = "en" },
-  { name = "Deutsch", link = "/de/", lang = "de" },
-]
-"""
-SOCIAL = """[[project.extra.social]]
-icon = "fontawesome/solid/globe"
-link = "https://mailcow.email"
-[[project.extra.social]]
-icon = "fontawesome/brands/github-alt"
-link = "https://github.com/mailcow"
-[[project.extra.social]]
-icon = "fontawesome/brands/x-twitter"
-link = "https://x.com/mailcow_email"
-[[project.extra.social]]
-icon = "fontawesome/brands/mastodon"
-link = "https://mailcow.social/@doncow"
-"""
-EXT = """[project.markdown_extensions.abbr]
-[project.markdown_extensions.attr_list]
-[project.markdown_extensions.admonition]
-[project.markdown_extensions.md_in_html]
-[project.markdown_extensions.tables]
-[project.markdown_extensions.footnotes]
-[project.markdown_extensions.toc]
-permalink = true
-[project.markdown_extensions.pymdownx.magiclink]
-[project.markdown_extensions.pymdownx.tasklist]
-custom_checkbox = true
-[project.markdown_extensions.pymdownx.mark]
-[project.markdown_extensions.pymdownx.caret]
-[project.markdown_extensions.pymdownx.details]
-[project.markdown_extensions.pymdownx.tilde]
-[project.markdown_extensions.pymdownx.betterem]
-[project.markdown_extensions.pymdownx.snippets]
-auto_append = ["includes/abbreviations.md"]
-[project.markdown_extensions.pymdownx.superfences]
-[project.markdown_extensions.pymdownx.tabbed]
-alternate_style = true
-[project.markdown_extensions.pymdownx.emoji]
-emoji_index = "zensical.extensions.emoji.twemoji"
-emoji_generator = "zensical.extensions.emoji.to_svg"
+_ICON = (
+    "M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5"
+    "C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"
+)
+NEWTAB_CSS_SOURCE = f"""\
+/* External-link icon (replacement for mkdocs-open-in-new-tab add_icon). */
+.md-typeset a.external-link::after {{
+  content: "";
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  margin-left: 0.15em;
+  vertical-align: -0.1em;
+  background-color: currentColor;
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="{_ICON}"/></svg>') center / contain no-repeat;
+  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="{_ICON}"/></svg>') center / contain no-repeat;
+}}
 """
 
-def _strip_lang(path: str) -> str:
-    # redirect targets in mkdocs.yml were written for the suffix layout
-    # (e.g. "...integration.en.md"); the split tree has no suffix, so normalise.
-    return re.sub(r"\.(en|de)\.md$", ".md", path)
 
-def redirects_toml():
-    if not redirect_maps:
-        return ""
-    lines = ["[project.plugins.redirects.redirect_maps]"]
-    for k, v in redirect_maps.items():
-        lines.append(f"{_esc(_strip_lang(k))} = {_esc(_strip_lang(v))}")
-    return "\n".join(lines) + "\n"
+def strip_suffix(path: str) -> str:
+    """page.en.md -> page.md (redirect targets were written for the suffix layout)."""
+    return re.sub(rf"\.(?:{_LOCALES})\.md$", ".md", path)
 
-def toml_for(lang: str) -> str:
-    de = lang == "de"
-    site_name = "mailcow: dockerized Dokumentation" if de else "mailcow: dockerized documentation"
-    site_url  = "https://docs.mailcow.email/de/" if de else "https://docs.mailcow.email/"
-    head = f'''[project]
-site_name = "{site_name}"
-site_url = "{site_url}"
-copyright = "Copyright &copy; <script>document.write(new Date().getFullYear())</script> mailcow Team & Community"
-repo_name = "mailcow/mailcow-dockerized"
-repo_url = "https://github.com/mailcow/mailcow-dockerized"
-edit_uri = "../mailcow-dockerized-docs/edit/master/docs/"
-extra_css = ["assets/stylesheets/extra.css"]
-extra_javascript = ["assets/javascripts/client.js"]
-'''
-    theme = f'''[project.theme]
-variant = "classic"
-custom_dir = "overrides"
-language = "{lang}"
-logo = "assets/images/logo.svg"
-favicon = "assets/images/favicon.png"
-features = ["navigation.top","navigation.tracking","announce.dismiss","content.tabs.link","content.tooltips","content.code.copy","search.share","search.highlight"]
-'''
-    # redirects only in the default-language (root) build
-    redir = redirects_toml() if lang == DEFAULT else ""
-    return head + nav_toml(de) + "\n" + theme + PALETTE + "\n" + ALTERNATE + "\n" + SOCIAL + "\n" + EXT + ("\n" + redir if redir else "")
+
+def _fix_link(match):
+    if match["path"].startswith(("http://", "https://", "//")):
+        return match[0]
+    return f"{match['pre']}{match['path']}.md{match['anchor'] or ''}"
+
+
+# --- git-revision-date-localized --------------------------------------------
+
+def git_dates() -> dict:
+    """Last commit (author) time of every file under docs/, from one git log pass."""
+    git = ["git", "-C", str(ROOT)]
+    try:
+        shallow = subprocess.run(git + ["rev-parse", "--is-shallow-repository"],
+                                 capture_output=True, text=True, check=True).stdout.strip()
+        log = subprocess.run(git + ["-c", "core.quotepath=off", "log", "--format=%x00%at",
+                                    "--name-only", "--", "docs"],
+                             capture_output=True, text=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError):
+        print("warning: no git history available, pages get no revision date")
+        return {}
+    if shallow == "true":
+        print("warning: shallow clone, page dates will be wrong (check out with fetch-depth: 0)")
+    dates, stamp = {}, None
+    for line in log.splitlines():
+        if line.startswith("\x00"):
+            stamp = int(line[1:])
+        elif line and stamp is not None:
+            dates.setdefault(line, stamp)       # newest commit comes first
+    return dates
+
+
+def date_formatter():
+    conf = CONF.get("git-revision-date-localized")
+    if conf is None:
+        return None
+    try:
+        from zoneinfo import ZoneInfo
+        zone = ZoneInfo(conf.get("timezone", "UTC"))
+    except Exception:
+        print("warning: time zone data not available, page dates are shown in UTC")
+        zone = timezone.utc
+    pattern = "%Y-%m-%d %H:%M:%S" if conf.get("type") == "iso_datetime" else "%Y-%m-%d"
+    return lambda stamp: datetime.fromtimestamp(stamp, zone).strftime(pattern)
+
+
+def add_front_matter(text: str, key: str, value: str) -> str:
+    line = f'{key}: "{value}"\n'
+    if text.startswith(("---\n", "---\r\n")):
+        cut = text.index("\n") + 1
+        return text[:cut] + line + text[cut:]
+    return f"---\n{line}---\n\n{text}"
+
+
+# --- per-language docs tree ---------------------------------------------------
+
+def build_tree(locale: str, dst: Path, dates: dict, fmt) -> int:
+    pages, variants = {}, {}
+    for src in sorted(DOCS.rglob("*")):
+        if not src.is_file():
+            continue
+        rel = src.relative_to(DOCS)
+        match = SUFFIXED.match(src.name)
+        if match and match["ext"] == "md":
+            pages.setdefault(rel.with_name(f"{match['stem']}.md"), {})[match["lang"]] = src
+            continue
+        # Assets are copied under their own name, so explicit references such as
+        # image.en.png keep working in every language ...
+        target = dst / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, target)
+        if match:
+            variants.setdefault(rel.with_name(f"{match['stem']}.{match['ext']}"), {})[match["lang"]] = src
+    # ... and image.<lang>.png is also published as image.png for this language.
+    for rel, by_lang in variants.items():
+        src = by_lang.get(locale) or (by_lang.get(DEFAULT) if FALLBACK else None)
+        if src and not (dst / rel).exists():
+            shutil.copy2(src, dst / rel)
+    for rel, by_lang in pages.items():
+        src = by_lang.get(locale) or (by_lang.get(DEFAULT) if FALLBACK else None)
+        if src is None:
+            continue
+        text = PAGE_LINK.sub(_fix_link, src.read_text(encoding="utf-8"))
+        stamp = dates.get(src.relative_to(ROOT).as_posix())
+        if fmt and stamp:
+            text = add_front_matter(text, "git_revision_date_localized", fmt(stamp))
+        target = dst / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(text, encoding="utf-8")
+    return len(pages)
+
+
+# --- per-language config ------------------------------------------------------
+
+def translate_nav(items, table):
+    out = []
+    for item in items:
+        if isinstance(item, dict):
+            (title, value), = item.items()
+            value = translate_nav(value, table) if isinstance(value, list) else value
+            out.append({table.get(title, title): value})
+        else:
+            out.append(item)
+    return out
+
+
+def config_for(lang: dict) -> dict:
+    locale = lang["locale"]
+    is_default = locale == DEFAULT
+    conf = copy.deepcopy(MK)
+    conf.pop("remote_branch", None)                  # only used by mkdocs gh-deploy
+    if lang.get("site_name"):
+        conf["site_name"] = lang["site_name"]
+    if not is_default and conf.get("site_url"):
+        conf["site_url"] = conf["site_url"].rstrip("/") + f"/{locale}/"
+    conf.setdefault("theme", {})["language"] = locale
+    if lang.get("nav_translations") and conf.get("nav"):
+        conf["nav"] = translate_nav(conf["nav"], lang["nav_translations"])
+    conf.setdefault("extra", {})["alternate"] = [
+        {"name": other.get("name", other["locale"]),
+         "link": BASE if other["locale"] == DEFAULT else f"{BASE}{other['locale']}/",
+         "lang": other["locale"]}
+        for other in LANGS
+    ]
+    plugins = []
+    for name, pconf in PLUGINS:
+        if name in HANDLED:
+            continue
+        pconf = copy.deepcopy(pconf)
+        if name == "redirects":
+            if not is_default:
+                continue                               # redirect stubs live at the site root
+            pconf["redirect_maps"] = {strip_suffix(k): strip_suffix(v)
+                                      for k, v in (pconf.get("redirect_maps") or {}).items()}
+        elif name == "social":
+            pconf["cache_dir"] = str(SOCIAL_CACHE)
+        plugins.append({name: pconf} if pconf else name)
+    conf["plugins"] = plugins
+    newtab = CONF.get("open-in-new-tab")
+    if newtab is not None:
+        conf["extra_javascript"] = list(conf.get("extra_javascript") or []) + [NEWTAB_JS]
+        if newtab.get("add_icon"):
+            conf["extra_css"] = list(conf.get("extra_css") or []) + [NEWTAB_CSS]
+    return conf
+
+
+def zensical_command() -> list:
+    exe = shutil.which("zensical")
+    return [exe] if exe else [sys.executable, "-m", "zensical"]
 
 
 def main():
-    if WORK.exists(): shutil.rmtree(WORK)
-    if OUT.exists():  shutil.rmtree(OUT)
+    for path in (WORK, OUT):
+        if path.exists():
+            shutil.rmtree(path)
+    dates = git_dates() if "git-revision-date-localized" in CONF else {}
+    fmt = date_formatter()
+    copy_dirs = {d for d in (MK.get("theme", {}).get("custom_dir"), "includes") if d and (ROOT / d).is_dir()}
     for lang in LANGS:
-        proj = WORK / lang
-        build_tree(lang, proj / "docs")
-        shutil.copytree(ROOT / "overrides", proj / "overrides")
-        shutil.copytree(ROOT / "includes",  proj / "includes")
-        (proj / "zensical.toml").write_text(toml_for(lang))
-        print(f"[{lang}] wrote project ({len(list((proj/'docs').rglob('*.md')))} pages), building...")
-        r = subprocess.run(["zensical", "build"], cwd=proj)
-        if r.returncode != 0:
-            sys.exit(f"zensical build failed for {lang}")
-    # Assemble: default language at root, others under /<lang>/
+        locale = lang["locale"]
+        project = WORK / locale
+        count = build_tree(locale, project / "docs", dates, fmt)
+        for name in copy_dirs:
+            shutil.copytree(ROOT / name, project / name)
+        if "open-in-new-tab" in CONF:
+            (project / "docs" / NEWTAB_JS).parent.mkdir(parents=True, exist_ok=True)
+            (project / "docs" / NEWTAB_JS).write_text(NEWTAB_JS_SOURCE, encoding="utf-8")
+            (project / "docs" / NEWTAB_CSS).parent.mkdir(parents=True, exist_ok=True)
+            (project / "docs" / NEWTAB_CSS).write_text(NEWTAB_CSS_SOURCE, encoding="utf-8")
+        (project / "mkdocs.yml").write_text(
+            yaml.dump(config_for(lang), Dumper=Dumper, allow_unicode=True, sort_keys=False, width=4096),
+            encoding="utf-8",
+        )
+        print(f"[{locale}] {count} pages, building ...", flush=True)
+        if subprocess.run(zensical_command() + ["build"], cwd=project).returncode:
+            sys.exit(f"zensical build failed for '{locale}'")
     shutil.copytree(WORK / DEFAULT / "site", OUT)
     for lang in LANGS:
-        if lang != DEFAULT:
-            shutil.copytree(WORK / lang / "site", OUT / lang)
-    print(f"\nDone -> {OUT}\n  root: {OUT/'index.html'}\n  de:   {OUT/'de'/'index.html'}")
+        if lang["locale"] != DEFAULT:
+            shutil.copytree(WORK / lang["locale"] / "site", OUT / lang["locale"])
+    print(f"\nDone -> {OUT}  (" + ", ".join(
+        f"{lang['locale']}: {BASE if lang['locale'] == DEFAULT else BASE + lang['locale'] + '/'}"
+        for lang in LANGS) + ")")
+
 
 if __name__ == "__main__":
     main()
